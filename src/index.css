@@ -1,0 +1,1550 @@
+/* Bebo Cycle & Contraceptive Pill Tracker - Design System */
+
+:root {
+  /* Colors */
+  --bg-primary: #0a0b10;
+  --bg-secondary: #121420;
+  --bg-tertiary: #191c30;
+  --bg-glass: rgba(18, 20, 32, 0.7);
+  --border-glass: rgba(255, 255, 255, 0.08);
+  --border-hover: rgba(181, 157, 251, 0.3);
+  
+  --accent: #b59dfb;
+  --accent-hover: #9c7eff;
+  --accent-glow: rgba(181, 157, 251, 0.15);
+  --primary-glow: radial-gradient(circle, rgba(124, 93, 250, 0.15) 0%, rgba(10, 11, 16, 0) 70%);
+
+  --text-main: #f3f4f6;
+  --text-muted: #9ca3af;
+  --text-dim: #6b7280;
+
+  --success: #05ffa1;
+  --success-bg: rgba(5, 255, 161, 0.1);
+  --success-border: rgba(5, 255, 161, 0.2);
+
+  --warning: #ffb703;
+  --warning-bg: rgba(255, 183, 3, 0.1);
+  --warning-border: rgba(255, 183, 3, 0.2);
+
+  --danger: #ff5c8a;
+  --danger-bg: rgba(255, 92, 138, 0.1);
+  --danger-border: rgba(255, 92, 138, 0.2);
+
+  --info: #00b4d8;
+  --info-bg: rgba(0, 180, 216, 0.1);
+  --info-border: rgba(0, 180, 216, 0.2);
+
+  /* Fonts */
+  --font-family: 'Outfit', 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  
+  /* Shadows & Transitions */
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.2);
+  --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 16px 40px rgba(0, 0, 0, 0.4);
+  --shadow-glow: 0 0 20px rgba(181, 157, 251, 0.2);
+  
+  --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  --radius-lg: 18px;
+  --radius-md: 12px;
+  --radius-sm: 8px;
+}
+
+/* Reset and Global Styles */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font-family);
+  background-color: var(--bg-primary);
+  background-image: var(--primary-glow);
+  background-size: cover;
+  background-attachment: fixed;
+  color: var(--text-main);
+  min-height: 100vh;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+#root {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+/* Scrollbars */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg-primary);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--bg-tertiary);
+  border-radius: var(--radius-sm);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--accent);
+}
+
+/* App Container Layout */
+.app-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  max-width: 1280px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 24px;
+  flex: 1;
+}
+
+/* Header Styles */
+.app-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--bg-glass);
+  backdrop-filter: blur(16px);
+  border: 1px solid var(--border-glass);
+  padding: 16px 28px;
+  border-radius: var(--radius-lg);
+  margin-bottom: 24px;
+  box-shadow: var(--shadow-md);
+}
+
+.header-logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.logo-icon {
+  background: linear-gradient(135deg, var(--accent) 0%, #7c5dfa 100%);
+  width: 42px;
+  height: 42px;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  box-shadow: var(--shadow-glow);
+  animation: logo-pulse 3s infinite ease-in-out;
+}
+
+.logo-text h1 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  background: linear-gradient(90deg, #fff 0%, var(--accent) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  line-height: 1.1;
+}
+
+.logo-text span {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+/* Contraceptive Status Shield Badge */
+.status-shield-badge {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--bg-tertiary);
+  padding: 8px 16px;
+  border-radius: 50px;
+  border: 1px solid var(--border-glass);
+  transition: var(--transition);
+}
+
+.status-shield-badge.active {
+  background: var(--success-bg);
+  border-color: var(--success-border);
+  box-shadow: 0 0 15px rgba(5, 255, 161, 0.15);
+}
+
+.status-shield-badge.warning {
+  background: var(--warning-bg);
+  border-color: var(--warning-border);
+  box-shadow: 0 0 15px rgba(255, 183, 3, 0.15);
+}
+
+.status-shield-badge.inactive {
+  background: var(--danger-bg);
+  border-color: var(--danger-border);
+}
+
+.shield-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.status-shield-badge.active .shield-icon { color: var(--success); }
+.status-shield-badge.warning .shield-icon { color: var(--warning); }
+.status-shield-badge.inactive .shield-icon { color: var(--danger); }
+
+.shield-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.shield-label {
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+}
+
+.shield-status {
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+/* Navigation Tabs */
+.app-nav {
+  display: flex;
+  gap: 8px;
+}
+
+.nav-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  padding: 10px 18px;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-family);
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: var(--transition);
+}
+
+.nav-btn svg {
+  width: 18px;
+  height: 18px;
+}
+
+.nav-btn:hover {
+  color: var(--text-main);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.nav-btn.active {
+  color: var(--accent);
+  background: var(--accent-glow);
+  box-shadow: inset 0 0 0 1px rgba(181, 157, 251, 0.15);
+}
+
+/* Main Content Area */
+.app-main {
+  flex: 1;
+}
+
+/* Screen Section Management */
+.screen-section {
+  display: block;
+  animation: fadeIn 0.4s ease-out;
+}
+
+.screen-section.hidden {
+  display: none;
+}
+
+/* Cards & Layout Items */
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: 7fr 4fr;
+  gap: 24px;
+}
+
+.dashboard-card {
+  background: var(--bg-glass);
+  backdrop-filter: blur(16px);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  margin-bottom: 24px;
+  box-shadow: var(--shadow-md);
+  transition: var(--transition);
+}
+
+.dashboard-card:hover {
+  border-color: var(--border-hover);
+  box-shadow: var(--shadow-lg);
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.card-header h3 {
+  font-size: 1.15rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.card-header h3 svg {
+  width: 20px;
+  height: 20px;
+}
+
+.text-accent { color: var(--accent); }
+.text-success { color: var(--success); }
+.text-warning { color: var(--warning); }
+.text-danger { color: var(--danger); }
+.text-info { color: var(--info); }
+
+.date-today {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text-muted);
+}
+
+/* Setup Wizard Card */
+.setup-card {
+  max-width: 550px;
+  margin: 60px auto;
+  background: var(--bg-glass);
+  border: 1px solid var(--border-glass);
+  padding: 40px;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  backdrop-filter: blur(20px);
+}
+
+.setup-header {
+  text-align: center;
+  margin-bottom: 28px;
+}
+
+.setup-logo-large {
+  width: 64px;
+  height: 64px;
+  background: var(--accent-glow);
+  color: var(--accent);
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 16px;
+  font-size: 2rem;
+  box-shadow: var(--shadow-glow);
+}
+
+.setup-logo-large svg {
+  width: 32px;
+  height: 32px;
+}
+
+.setup-header h2 {
+  font-size: 1.75rem;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.setup-header p {
+  color: var(--text-muted);
+  font-size: 0.95rem;
+}
+
+.info-alert {
+  display: flex;
+  gap: 12px;
+  background: var(--info-bg);
+  border: 1px solid var(--info-border);
+  padding: 16px;
+  border-radius: var(--radius-md);
+  margin-bottom: 24px;
+  font-size: 0.85rem;
+  color: #dfedfa;
+}
+
+.info-alert svg {
+  color: var(--info);
+  flex-shrink: 0;
+  margin-top: 2px;
+  width: 18px;
+  height: 18px;
+}
+
+.info-alert ul {
+  margin-top: 6px;
+  margin-left: 20px;
+}
+
+.form-group {
+  margin-bottom: 24px;
+}
+
+.form-group label {
+  display: block;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+}
+
+.form-group input[type="date"] {
+  width: 100%;
+  padding: 12px 16px;
+  border-radius: var(--radius-sm);
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-glass);
+  color: #fff;
+  font-family: var(--font-family);
+  font-size: 1rem;
+  outline: none;
+  transition: var(--transition);
+}
+
+.form-group input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(1);
+}
+
+.form-group input[type="date"]:focus {
+  border-color: var(--accent);
+  box-shadow: var(--shadow-glow);
+}
+
+.btn {
+  font-family: var(--font-family);
+  font-weight: 600;
+  padding: 12px 24px;
+  border-radius: var(--radius-sm);
+  border: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: var(--transition);
+}
+
+.btn-primary {
+  background: var(--accent);
+  color: var(--bg-primary);
+}
+
+.btn-primary:hover {
+  background: var(--accent-hover);
+  box-shadow: var(--shadow-glow);
+}
+
+.btn-secondary {
+  background: var(--bg-tertiary);
+  color: var(--text-main);
+  border: 1px solid var(--border-glass);
+}
+
+.btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: var(--text-muted);
+}
+
+.btn-danger {
+  background: var(--danger-bg);
+  color: var(--danger);
+  border: 1px solid var(--danger-border);
+}
+
+.btn-danger:hover {
+  background: var(--danger);
+  color: var(--bg-primary);
+}
+
+.btn-accent {
+  background: var(--accent-glow);
+  color: var(--accent);
+  border: 1px solid var(--border-hover);
+}
+
+.btn-accent:hover {
+  background: var(--accent);
+  color: var(--bg-primary);
+}
+
+.btn-block {
+  width: 100%;
+  margin-bottom: 12px;
+}
+
+.btn-sm {
+  padding: 6px 12px;
+  font-size: 0.8rem;
+  border-radius: var(--radius-sm);
+}
+
+.btn-icon {
+  width: 38px;
+  height: 38px;
+  padding: 0;
+  border-radius: 50%;
+}
+
+/* Phase Progress Banner */
+.phase-banner {
+  background: linear-gradient(135deg, var(--bg-tertiary) 0%, rgba(124, 93, 250, 0.1) 100%);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-lg);
+  padding: 24px 30px;
+  margin-bottom: 24px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: var(--shadow-md);
+}
+
+.phase-banner::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 200px;
+  height: 200px;
+  background: radial-gradient(circle, rgba(181, 157, 251, 0.08) 0%, rgba(0,0,0,0) 70%);
+  pointer-events: none;
+}
+
+.phase-badge {
+  display: inline-block;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  background: var(--accent);
+  color: var(--bg-primary);
+  padding: 4px 10px;
+  border-radius: 50px;
+  margin-bottom: 12px;
+  letter-spacing: 0.05em;
+}
+
+.phase-banner h2 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.phase-banner p {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  margin-bottom: 20px;
+}
+
+.progress-container {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.progress-bar-wrapper {
+  flex: 1;
+  height: 8px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 50px;
+  overflow: hidden;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #7c5dfa 0%, var(--accent) 100%);
+  border-radius: 50px;
+  transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 0 10px rgba(181, 157, 251, 0.3);
+}
+
+.progress-text {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+/* Daily Checklist */
+.dosage-instruction {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  margin-bottom: 20px;
+  background: rgba(255, 255, 255, 0.03);
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  border-left: 3px solid var(--accent);
+}
+
+.checklist-items {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.checklist-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-radius: var(--radius-md);
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border-glass);
+  cursor: pointer;
+  user-select: none;
+  transition: var(--transition);
+}
+
+.checklist-item:hover {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: var(--border-hover);
+}
+
+.checklist-item.checked {
+  background: var(--success-bg);
+  border-color: var(--success-border);
+}
+
+.checkbox-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.checkbox-custom {
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  border: 2px solid var(--text-dim);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: transparent;
+  transition: var(--transition);
+}
+
+.checklist-item.checked .checkbox-custom {
+  background: var(--success);
+  border-color: var(--success);
+  color: var(--bg-primary);
+}
+
+.checkbox-custom svg {
+  width: 14px;
+  height: 14px;
+  stroke-width: 3px;
+}
+
+.checkbox-label {
+  display: flex;
+  flex-direction: column;
+}
+
+.checkbox-label span {
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.checkbox-label small {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.checklist-item.checked .checkbox-label span {
+  text-decoration: line-through;
+  color: var(--text-muted);
+}
+
+.badge-time {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  padding: 4px 8px;
+  border-radius: 4px;
+  background: var(--bg-tertiary);
+  color: var(--text-muted);
+}
+
+.checklist-item.checked .badge-time {
+  background: rgba(5, 255, 161, 0.15);
+  color: var(--success);
+}
+
+/* Streak Indicator */
+.streak-indicator {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border-glass);
+  color: var(--warning);
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.streak-indicator svg {
+  width: 18px;
+  height: 18px;
+  animation: flame-pulse 1.5s infinite ease-in-out;
+}
+
+/* Period Logger Widget (Alert highlight card) */
+.period-card {
+  border-color: var(--danger-border);
+  background: linear-gradient(135deg, var(--bg-glass) 0%, rgba(255, 92, 138, 0.05) 100%);
+}
+
+.period-card:hover {
+  border-color: var(--danger);
+  box-shadow: 0 8px 30px rgba(255, 92, 138, 0.1);
+}
+
+.period-card-body {
+  display: flex;
+  align-items: flex-start;
+  gap: 20px;
+}
+
+.period-icon-wrapper {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-md);
+  background: var(--danger-bg);
+  border: 1px solid var(--danger-border);
+  color: var(--danger);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  flex-shrink: 0;
+  animation: period-pulse 2s infinite ease-in-out;
+}
+
+.period-icon-wrapper svg {
+  width: 24px;
+  height: 24px;
+}
+
+.period-info h4 {
+  font-size: 1.05rem;
+  font-weight: 600;
+  margin-bottom: 4px;
+  color: var(--danger);
+}
+
+.period-info p {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin-bottom: 14px;
+}
+
+.period-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.logged-period-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--success);
+}
+
+/* Doctor Revisit Tracker */
+.doc-card {
+  position: relative;
+}
+
+.text-center {
+  text-align: center;
+}
+
+.doc-avatar {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: var(--info-bg);
+  color: var(--info);
+  border: 1px solid var(--info-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 16px;
+  font-size: 1.4rem;
+}
+
+.doc-avatar svg {
+  width: 24px;
+  height: 24px;
+}
+
+.doc-subtitle {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin-bottom: 24px;
+}
+
+.countdown-circle {
+  position: relative;
+  width: 140px;
+  height: 140px;
+  margin: 0 auto 20px;
+}
+
+.countdown-svg {
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+
+.countdown-bg {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.03);
+  stroke-width: 8;
+}
+
+.countdown-progress {
+  fill: none;
+  stroke: var(--info);
+  stroke-width: 8;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 0.6s ease;
+}
+
+.countdown-number {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.countdown-number span {
+  font-size: 2.2rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.countdown-number small {
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  font-weight: 600;
+  margin-top: 2px;
+}
+
+.doc-target-date {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  background: rgba(255, 255, 255, 0.02);
+  padding: 6px 12px;
+  border-radius: 50px;
+  display: inline-block;
+}
+
+.urgent-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--danger-bg);
+  border: 1px solid var(--danger-border);
+  color: var(--danger);
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 4px;
+  margin-top: 14px;
+  animation: shake 1.5s infinite;
+}
+
+/* Guideline items */
+.guideline-item {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.guideline-item:last-child {
+  margin-bottom: 0;
+}
+
+.guideline-icon {
+  background: rgba(255, 255, 255, 0.03);
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.guideline-icon svg {
+  width: 18px;
+  height: 18px;
+}
+
+.guideline-content h5 {
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin-bottom: 2px;
+}
+
+.guideline-content p {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+/* Calendar Screen Styles */
+.calendar-wrapper {
+  background: var(--bg-glass);
+  backdrop-filter: blur(16px);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-lg);
+  padding: 30px;
+  box-shadow: var(--shadow-md);
+}
+
+.calendar-header-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.calendar-header-bar h2 {
+  font-size: 1.4rem;
+  font-weight: 700;
+}
+
+.calendar-controls {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.calendar-controls h3 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  min-width: 120px;
+  text-align: center;
+}
+
+.calendar-legends {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--border-glass);
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--text-muted);
+}
+
+.legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.legend-dot.phase-1 { background-color: var(--accent); }
+.legend-dot.phase-3 { background-color: var(--info); }
+.legend-dot.phase-pause { background-color: rgba(255, 255, 255, 0.08); border: 1px dashed var(--text-dim); }
+.legend-dot.phase-period { background-color: var(--danger); }
+.legend-dot.icon-taken {
+  background-color: var(--success-bg);
+  border: 1px solid var(--success-border);
+  color: var(--success);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  height: 14px;
+}
+.legend-dot.icon-taken svg, .legend-dot.icon-missed svg { width: 8px; height: 8px; stroke-width: 4px; }
+.legend-dot.icon-missed {
+  background-color: var(--danger-bg);
+  border: 1px solid var(--danger-border);
+  color: var(--danger);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  height: 14px;
+}
+
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 8px;
+}
+
+.day-name {
+  text-align: center;
+  font-weight: 600;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  padding: 8px 0;
+}
+
+.days-container {
+  display: contents;
+}
+
+/* Calendar individual day blocks */
+.calendar-day {
+  aspect-ratio: 1.15;
+  background: rgba(255, 255, 255, 0.01);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-sm);
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  cursor: pointer;
+  position: relative;
+  transition: var(--transition);
+}
+
+.calendar-day:hover {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: var(--accent);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-sm);
+}
+
+.calendar-day.empty {
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.calendar-day.today {
+  border-color: var(--accent) !important;
+  box-shadow: var(--shadow-glow);
+}
+
+.calendar-day.today::before {
+  content: 'TODAY';
+  position: absolute;
+  top: -8px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--accent);
+  color: var(--bg-primary);
+  font-size: 0.55rem;
+  font-weight: 800;
+  padding: 1px 6px;
+  border-radius: 4px;
+  letter-spacing: 0.05em;
+  z-index: 2;
+}
+
+.day-number {
+  font-size: 0.9rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.day-status-dots {
+  display: flex;
+  gap: 3px;
+  justify-content: center;
+}
+
+.day-status-dot {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+}
+
+.day-status-dot.taken { background-color: var(--success); }
+.day-status-dot.missed { background-color: var(--danger); }
+
+/* Day phase coloring themes */
+.calendar-day.phase-1 {
+  background: rgba(181, 157, 251, 0.04);
+  border-color: rgba(181, 157, 251, 0.15);
+}
+.calendar-day.phase-1 .day-number { color: var(--accent); }
+
+.calendar-day.phase-3 {
+  background: rgba(0, 180, 216, 0.04);
+  border-color: rgba(0, 180, 216, 0.15);
+}
+.calendar-day.phase-3 .day-number { color: var(--info); }
+
+.calendar-day.phase-pause {
+  background: rgba(255, 255, 255, 0.01);
+  border-style: dashed;
+}
+.calendar-day.phase-pause .day-number { color: var(--text-muted); }
+
+.calendar-day.phase-period {
+  background: rgba(255, 92, 138, 0.08);
+  border-color: rgba(255, 92, 138, 0.25);
+}
+.calendar-day.phase-period .day-number { color: var(--danger); }
+
+/* Forecast/estimated overlays for future dates */
+.calendar-day.forecast {
+  opacity: 0.55;
+  border-style: dashed;
+}
+
+.calendar-day.forecast:hover {
+  opacity: 0.9;
+}
+
+/* Specific dosage completion icon in calendar day */
+.day-completion-icon {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.day-completion-icon.taken {
+  background-color: var(--success-bg);
+  color: var(--success);
+}
+.day-completion-icon.taken svg { width: 10px; height: 10px; stroke-width: 3px; }
+
+.day-completion-icon.missed {
+  background-color: var(--danger-bg);
+  color: var(--danger);
+}
+.day-completion-icon.missed svg { width: 10px; height: 10px; stroke-width: 3px; }
+
+/* Day Details Panel underneath the calendar */
+.day-details-panel {
+  margin-top: 24px;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-md);
+  padding: 16px 20px;
+  animation: slideDown 0.3s ease-out;
+}
+
+.panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.panel-header h4 {
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.btn-close {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.btn-close:hover { color: #fff; }
+
+.panel-body {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.details-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+/* History logs Screen Styles */
+.card-container {
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.justify-between {
+  justify-content: space-between;
+}
+
+.card-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.history-intro {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  margin-bottom: 20px;
+}
+
+.table-responsive {
+  width: 100%;
+  overflow-x: auto;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-glass);
+}
+
+.history-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 0.85rem;
+}
+
+.history-table th {
+  background: var(--bg-tertiary);
+  color: var(--text-muted);
+  font-weight: 600;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border-glass);
+}
+
+.history-table td {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border-glass);
+  background: rgba(255, 255, 255, 0.01);
+}
+
+.history-table tr:last-child td {
+  border-bottom: none;
+}
+
+.history-table tr:hover td {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.pill-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.pill-badge.completed {
+  background: var(--success-bg);
+  color: var(--success);
+  border: 1px solid var(--success-border);
+}
+
+.pill-badge.missed {
+  background: var(--danger-bg);
+  color: var(--danger);
+  border: 1px solid var(--danger-border);
+}
+
+.pill-badge.partial {
+  background: var(--warning-bg);
+  color: var(--warning);
+  border: 1px solid var(--warning-border);
+}
+
+.pill-badge.pause {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-muted);
+  border: 1px solid var(--border-glass);
+}
+
+/* Regimen Guide Screen Styles */
+.guide-grid {
+  display: grid;
+  grid-template-columns: 3fr 2fr;
+  gap: 24px;
+}
+
+.guide-card {
+  background: var(--bg-glass);
+  backdrop-filter: blur(16px);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-lg);
+  padding: 30px;
+  box-shadow: var(--shadow-md);
+}
+
+.guide-card h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.guide-card p {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  margin-bottom: 24px;
+}
+
+.timeline-roadmap {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  position: relative;
+  padding-left: 20px;
+}
+
+.timeline-roadmap::before {
+  content: '';
+  position: absolute;
+  left: 31px;
+  top: 15px;
+  bottom: 15px;
+  width: 2px;
+  background: var(--border-glass);
+}
+
+.roadmap-step {
+  display: flex;
+  gap: 20px;
+  position: relative;
+}
+
+.step-num {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--bg-tertiary);
+  color: var(--accent);
+  border: 2px solid var(--accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 700;
+  flex-shrink: 0;
+  z-index: 2;
+}
+
+.step-content h4 {
+  font-size: 0.95rem;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.step-content p {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+}
+
+.faq-card .faq-item {
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--border-glass);
+}
+
+.faq-card .faq-item:last-child {
+  margin-bottom: 0;
+  padding-bottom: 0;
+  border-bottom: none;
+}
+
+.faq-item h5 {
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.faq-item p {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin-bottom: 0;
+}
+
+/* Footer styling */
+.app-footer {
+  text-align: center;
+  color: var(--text-dim);
+  font-size: 0.75rem;
+  padding: 30px 0 10px;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes logo-pulse {
+  0% { transform: scale(1); box-shadow: var(--shadow-glow); }
+  50% { transform: scale(1.05); box-shadow: 0 0 30px rgba(181, 157, 251, 0.4); }
+  100% { transform: scale(1); box-shadow: var(--shadow-glow); }
+}
+
+@keyframes flame-pulse {
+  0% { transform: scale(1); filter: brightness(1); }
+  50% { transform: scale(1.15); filter: brightness(1.2); }
+  100% { transform: scale(1); filter: brightness(1); }
+}
+
+@keyframes period-pulse {
+  0% { box-shadow: 0 0 0 0 rgba(255, 92, 138, 0.4); }
+  70% { box-shadow: 0 0 0 10px rgba(255, 92, 138, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(255, 92, 138, 0); }
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  10%, 30%, 50%, 70%, 90% { transform: translateX(-2px); }
+  20%, 40%, 60%, 80% { transform: translateX(2px); }
+}
+
+/* Utility classes */
+.hidden {
+  display: none !important;
+}
+
+/* Responsive adjustments */
+@media (max-width: 900px) {
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .app-header {
+    flex-direction: column;
+    gap: 16px;
+    align-items: stretch;
+    padding: 16px;
+  }
+
+  .header-logo {
+    justify-content: center;
+  }
+
+  .status-shield-badge {
+    justify-content: center;
+  }
+
+  .app-nav {
+    justify-content: space-around;
+  }
+
+  .guide-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 600px) {
+  .app-container {
+    padding: 10px;
+  }
+
+  .app-nav {
+    flex-wrap: wrap;
+  }
+
+  .nav-btn {
+    flex: 1 1 40%;
+    justify-content: center;
+    font-size: 0.8rem;
+    padding: 8px 12px;
+  }
+
+  .calendar-day {
+    padding: 4px;
+    font-size: 0.8rem;
+  }
+
+  .day-completion-icon {
+    width: 12px;
+    height: 12px;
+    bottom: 4px;
+    right: 4px;
+  }
+  
+  .day-completion-icon svg {
+    width: 8px;
+    height: 8px;
+  }
+
+  .calendar-legends {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .setup-card {
+    padding: 20px;
+  }
+}
+
+/* History logs checkbox custom styling */
+.checkbox-container {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  user-select: none;
+  font-weight: 500;
+}
+
+.checkbox-container input {
+  display: none;
+}
+
+.checkbox-container .checkbox-checkmark {
+  width: 18px;
+  height: 18px;
+  border: 2px solid var(--text-dim);
+  border-radius: 4px;
+  display: inline-block;
+  position: relative;
+  transition: var(--transition);
+}
+
+.checkbox-container input:checked + .checkbox-checkmark {
+  border-color: var(--danger);
+  background-color: var(--danger-bg);
+}
+
+.checkbox-container input:checked + .checkbox-checkmark::after {
+  content: '';
+  position: absolute;
+  left: 5px;
+  top: 1px;
+  width: 4px;
+  height: 9px;
+  border: solid var(--danger);
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+.font-semibold {
+  font-weight: 600;
+}
