@@ -1064,12 +1064,23 @@ export default function App() {
                                   <td>
                                     {day.isPause ? (
                                       <span className="pill-badge pause">Pause</span>
-                                    ) : day.isFullyTaken ? (
-                                      <span className="pill-badge completed">Fully Taken</span>
-                                    ) : day.takenPills.length > 0 ? (
-                                      <span className="pill-badge partial">Partial ({day.takenPills.map(p => p.charAt(0).toUpperCase()).join('/')})</span>
                                     ) : (
-                                      <span className="pill-badge missed">Missed</span>
+                                      <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                                        {day.expectedPills.map(pill => {
+                                          const isTaken = day.logEntry[pill] === true;
+                                          return (
+                                            <button
+                                              key={pill}
+                                              className={`btn btn-sm ${isTaken ? 'btn-primary' : 'btn-secondary'}`}
+                                              style={{ padding: '4px 8px', fontSize: '0.75rem', borderRadius: '4px' }}
+                                              onClick={() => handleTogglePill(day.dateStr, pill)}
+                                              title={`Click to mark ${pill} as ${isTaken ? 'missed' : 'taken'}`}
+                                            >
+                                              {isTaken ? `✓ ${pill.toUpperCase()}` : `✗ ${pill.toUpperCase()}`}
+                                            </button>
+                                          );
+                                        })}
+                                      </div>
                                     )}
                                   </td>
                                   <td>
