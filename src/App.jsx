@@ -23,7 +23,8 @@ import {
   RefreshCw,
   HelpCircle,
   Shield,
-  Heart
+  Heart,
+  Bell
 } from 'lucide-react';
 import './App.css';
 
@@ -58,6 +59,38 @@ function addDays(date, days) {
   const result = new Date(date);
   result.setDate(result.getDate() + days);
   return result;
+}
+
+// Web Audio API Synthesizer Chime
+function playChime() {
+  try {
+    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+    if (!AudioContextClass) return;
+    const audioCtx = new AudioContextClass();
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    
+    osc.type = 'sine';
+    const now = audioCtx.currentTime;
+    
+    // Premium soft chime: double note (D5 followed by A5)
+    osc.frequency.setValueAtTime(587.33, now); // D5
+    gain.gain.setValueAtTime(0, now);
+    gain.gain.linearRampToValueAtTime(0.08, now + 0.03);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.35);
+    
+    osc.frequency.setValueAtTime(880.00, now + 0.12); // A5
+    gain.gain.setValueAtTime(0.08, now + 0.12);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.55);
+    
+    osc.start(now);
+    osc.stop(now + 0.6);
+  } catch (err) {
+    console.error("Audio Context error:", err);
+  }
 }
 
 // Timeline simulation engine
@@ -241,7 +274,55 @@ export default function App() {
   
   const fileInputRef = useRef(null);
   
+  const [reminderSettings, setReminderSettings] = useState(() => {
+    const saved = localStorage.getItem('bebo_reminder_settings');
+    const defaults = {
+      enabled: false,
+      audioEnabled: true,
+      morningTime: '08:00',
+      eveningTime: '20:00',
+      nightTime: '21:00',
+      twilioEnabled: false,
+      twilioSid: '',
+      twilioToken: '',
+      twilioFrom: '',
+      twilioTo: '',
+      twilioType: 'whatsapp'
+    };
+    return saved ? { ...defaults, ...JSON.parse(saved) } : defaults;
+  });
+  
+  const [lastFiredReminders, setLastFiredReminders] = useState(() => {
+    const saved = localStorage.getItem('bebo_last_fired_reminders');
+    return saved ? JSON.parse(saved) : {};
+  });
+
+  const [notificationPermission, setNotificationPermission] = useState(() => {
+    return typeof Notification !== 'undefined' ? Notification.permission : 'default';
+  });
+
   // Save to localStorage when state changes
+  useEffect(() => {
+    localStorage.setItem('bebo_reminder_settings', JSON.stringify(reminderSettings));
+  }, [reminderSettings]);
+
+  useEffect(() => {
+    localStorage.setItem('bebo_last_fired_reminders', JSON.stringify(lastFiredReminders));
+  }, [lastFiredReminders]);
+
+  // Clean up old fired reminders from previous days
+  useEffect(() => {
+    setLastFiredReminders(prev => {
+      const cleaned = {};
+      const today = getTodayDateStr();
+      Object.keys(prev).forEach(key => {
+        if (key.startsWith(today)) {
+          cleaned[key] = prev[key];
+        }
+      });
+      return cleaned;
+    });
+  }, []);
   useEffect(() => {
     if (startDate) {
       localStorage.setItem('bebo_start_date', startDate);
@@ -263,6 +344,111 @@ export default function App() {
   const todayItem = useMemo(() => {
     return timeline.find(d => d.dateStr === todayStr);
   }, [timeline, todayStr]);
+
+
+
+  const sendTwilioSMS = async (message, customSettings = null) => {
+    const sid = customSettings?.twilioSid || reminderSettings.twilioSid;
+    const token = customSettings?.twilioToken || reminderSettings.twilioToken;
+    const from = customSettings?.twilioFrom || reminderSettings.twilioFrom;
+    const to = customSettings?.twilioTo || reminderSettings.twilioTo;
+    const type = customSettings?.twilioType || reminderSettings.twilioType;
+    
+    if (!sid || !token || !from || !to) {
+      console.warn("Twilio configuration parameters missing.");
+      return false;
+    }
+    
+    const url = 'http://localhost:3001/api/send-sms';
+    
+    try {
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          accountSid: sid,
+          authToken: token,
+          from: from,
+          to: to,
+          message: message,
+          type: type
+        })
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        console.error("Local proxy Twilio API returned error status:", response.status, errorData);
+        return false;
+      }
+      
+      return true;
+    } catch (err) {
+      console.error("Failed to make request to local Twilio proxy:", err);
+      return false;
+    }
+  };
+
+  // Background Reminder Engine
+  useEffect(() => {
+    if (!startDate || (!reminderSettings.enabled && !reminderSettings.twilioEnabled) || !todayItem) return;
+
+    const checkReminders = () => {
+      const now = new Date();
+      const currentHours = String(now.getHours()).padStart(2, '0');
+      const currentMinutes = String(now.getMinutes()).padStart(2, '0');
+      const currentTimeStr = `${currentHours}:${currentMinutes}`;
+      const currentDateStr = todayStr;
+      
+      const expectedPills = todayItem.expectedPills;
+      
+      expectedPills.forEach(pill => {
+        const isTaken = todayItem.logEntry[pill] === true;
+        if (isTaken) return;
+        
+        let reminderTime = '';
+        if (pill === 'morning') reminderTime = reminderSettings.morningTime;
+        else if (pill === 'evening') reminderTime = reminderSettings.eveningTime;
+        else if (pill === 'night') reminderTime = reminderSettings.nightTime;
+        
+        if (!reminderTime) return;
+        
+        const reminderKey = `${currentDateStr}-${pill}`;
+        if (currentTimeStr >= reminderTime && !lastFiredReminders[reminderKey]) {
+          let firedAny = false;
+          const pillLabel = pill.charAt(0).toUpperCase() + pill.slice(1);
+          
+          if (reminderSettings.enabled && typeof Notification !== 'undefined' && Notification.permission === 'granted') {
+            new Notification("Bebo Medication Reminder", {
+              body: `It's time to take your ${pillLabel} Pill! (${reminderTime})`,
+            });
+            firedAny = true;
+          }
+          
+          if (reminderSettings.twilioEnabled && reminderSettings.twilioSid && reminderSettings.twilioToken && reminderSettings.twilioFrom && reminderSettings.twilioTo) {
+            sendTwilioSMS(`Bebo Reminder: It's time to take your ${pillLabel} Pill! (${reminderTime})`);
+            firedAny = true;
+          }
+          
+          if (firedAny) {
+            if (reminderSettings.audioEnabled) {
+              playChime();
+            }
+            
+            setLastFiredReminders(prev => ({
+              ...prev,
+              [reminderKey]: true
+            }));
+          }
+        }
+      });
+    };
+
+    checkReminders();
+    const interval = setInterval(checkReminders, 30000);
+    return () => clearInterval(interval);
+  }, [startDate, reminderSettings, todayItem, todayStr, lastFiredReminders]);
   
   // Memoized Streak Count
   const streak = useMemo(() => {
@@ -408,9 +594,66 @@ export default function App() {
     if (confirm("Are you sure you want to reset all tracking data? This cannot be undone.")) {
       setStartDate(null);
       setLogs({});
+      setReminderSettings({
+        enabled: false,
+        audioEnabled: true,
+        morningTime: '08:00',
+        eveningTime: '20:00',
+        nightTime: '21:00'
+      });
+      setLastFiredReminders({});
       setActiveTab('dashboard');
       localStorage.removeItem('bebo_start_date');
       localStorage.removeItem('bebo_logs');
+      localStorage.removeItem('bebo_reminder_settings');
+      localStorage.removeItem('bebo_last_fired_reminders');
+    }
+  };
+
+  const handleRequestNotificationPermission = async () => {
+    if (typeof Notification === 'undefined') return 'unsupported';
+    const permission = await Notification.requestPermission();
+    setNotificationPermission(permission);
+    return permission;
+  };
+
+  const handleToggleReminders = async () => {
+    if (!reminderSettings.enabled) {
+      const permission = await handleRequestNotificationPermission();
+      if (permission === 'granted') {
+        setReminderSettings(prev => ({ ...prev, enabled: true }));
+      } else {
+        alert("Browser notifications permission is required to send alerts. Please enable them in your browser settings.");
+      }
+    } else {
+      setReminderSettings(prev => ({ ...prev, enabled: false }));
+    }
+  };
+
+  const handleTestReminder = () => {
+    if (reminderSettings.audioEnabled) {
+      playChime();
+    }
+    
+    if (typeof Notification !== 'undefined') {
+      if (Notification.permission === 'granted') {
+        new Notification("Bebo Reminder Test", {
+          body: "This is a test notification from Bebo Pill & Cycle Companion. It works!",
+        });
+      } else {
+        Notification.requestPermission().then(permission => {
+          setNotificationPermission(permission);
+          if (permission === 'granted') {
+            new Notification("Bebo Reminder Test", {
+              body: "This is a test notification from Bebo Pill & Cycle Companion. It works!",
+            });
+          } else {
+            alert("Notification permission is not granted. Please grant permission to see notifications.");
+          }
+        });
+      }
+    } else {
+      alert("Notifications are not supported in this browser.");
     }
   };
   
@@ -607,6 +850,12 @@ export default function App() {
               onClick={() => { setActiveTab('history'); setSelectedDayDetails(null); }}
             >
               <HistoryIcon /> Logs & Edit
+            </button>
+            <button 
+              className={`nav-btn ${activeTab === 'reminders' ? 'active' : ''}`}
+              onClick={() => { setActiveTab('reminders'); setSelectedDayDetails(null); }}
+            >
+              <Bell /> Reminders
             </button>
             <button 
               className={`nav-btn ${activeTab === 'guide' ? 'active' : ''}`}
@@ -1110,7 +1359,329 @@ export default function App() {
               </section>
             )}
 
-            {/* SCREEN 5: Regimen Guide Tab */}
+            {/* SCREEN 5: Reminders & Alerts Configuration */}
+            {activeTab === 'reminders' && (
+              <section className="screen-section">
+                <div className="reminders-container">
+                  <div className="dashboard-card reminders-settings-card">
+                    <div className="card-header justify-between">
+                      <h3>
+                        <Bell className="text-accent" />
+                        Reminders & Alerts Configuration
+                      </h3>
+                      <div className="notification-status-badge">
+                        <span className="text-muted" style={{ marginRight: '6px' }}>Status:</span>
+                        {notificationPermission === 'granted' ? (
+                          <span className="badge-status success">Push Enabled</span>
+                        ) : notificationPermission === 'denied' ? (
+                          <span className="badge-status danger">Push Blocked</span>
+                        ) : (
+                          <span className="badge-status warning">Push Setup Required</span>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="card-body">
+                      <p className="reminders-intro">
+                        Set up custom times to receive daily reminders for your scheduled contraceptive doses. You can configure native browser alerts, audible sounds, or Twilio SMS & WhatsApp alerts directly to your phone.
+                      </p>
+
+                      <div className="settings-grid">
+                        {/* Reminders Enable Toggle */}
+                        <div className="settings-row toggle-row">
+                          <div className="setting-description">
+                            <h4>System Push Notifications</h4>
+                            <p>Receive desktop/mobile browser alerts when your pill is due.</p>
+                          </div>
+                          <label className="switch">
+                            <input 
+                              type="checkbox" 
+                              checked={reminderSettings.enabled} 
+                              onChange={handleToggleReminders} 
+                            />
+                            <span className="slider round"></span>
+                          </label>
+                        </div>
+
+                        {/* Audio Chime Toggle */}
+                        <div className="settings-row toggle-row">
+                          <div className="setting-description">
+                            <h4>Audible Chime Alert</h4>
+                            <p>Play a gentle synthesizer chime sound when a reminder triggers.</p>
+                          </div>
+                          <label className="switch">
+                            <input 
+                              type="checkbox" 
+                              checked={reminderSettings.audioEnabled} 
+                              onChange={(e) => setReminderSettings(prev => ({ ...prev, audioEnabled: e.target.checked }))} 
+                            />
+                            <span className="slider round"></span>
+                          </label>
+                        </div>
+
+
+
+                        {/* Twilio Toggle */}
+                        <div className="settings-row toggle-row">
+                          <div className="setting-description">
+                            <h4>Twilio SMS & WhatsApp Alerts</h4>
+                            <p>Send reminders directly to your phone via Twilio SMS or WhatsApp.</p>
+                          </div>
+                          <label className="switch">
+                            <input 
+                              type="checkbox" 
+                              checked={reminderSettings.twilioEnabled} 
+                              onChange={(e) => setReminderSettings(prev => ({ ...prev, twilioEnabled: e.target.checked }))} 
+                            />
+                            <span className="slider round"></span>
+                          </label>
+                        </div>
+
+                        {/* Twilio Credentials Card */}
+                        {reminderSettings.twilioEnabled && (
+                          <div className="twilio-config-panel">
+                            <h4>Twilio Settings</h4>
+                            
+                            {/* Type selector */}
+                            <div className="form-group" style={{ marginBottom: '20px' }}>
+                              <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600' }}>Notification Channel</label>
+                              <div style={{ display: 'flex', gap: '20px' }}>
+                                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+                                  <input 
+                                    type="radio" 
+                                    name="twilioType" 
+                                    value="sms" 
+                                    checked={reminderSettings.twilioType === 'sms'} 
+                                    onChange={(e) => setReminderSettings(prev => ({ ...prev, twilioType: e.target.value }))}
+                                  />
+                                  <span>SMS Text Message</span>
+                                </label>
+                                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+                                  <input 
+                                    type="radio" 
+                                    name="twilioType" 
+                                    value="whatsapp" 
+                                    checked={reminderSettings.twilioType === 'whatsapp'} 
+                                    onChange={(e) => setReminderSettings(prev => ({ ...prev, twilioType: e.target.value }))}
+                                  />
+                                  <span style={{ color: '#25d366', fontWeight: '600' }}>WhatsApp Message</span>
+                                </label>
+                              </div>
+                            </div>
+
+                            <div className="form-group-row">
+                              <div className="form-group">
+                                <label htmlFor="twilioSid">Twilio Account SID</label>
+                                <input 
+                                  type="text" 
+                                  id="twilioSid" 
+                                  placeholder="ACxxxxxxxxxxxxxxxxxxxxxxxx"
+                                  value={reminderSettings.twilioSid} 
+                                  onChange={(e) => setReminderSettings(prev => ({ ...prev, twilioSid: e.target.value }))}
+                                  className="styled-text-input"
+                                />
+                              </div>
+                              <div className="form-group">
+                                <label htmlFor="twilioToken">Twilio Auth Token</label>
+                                <input 
+                                  type="password" 
+                                  id="twilioToken" 
+                                  placeholder="Enter Twilio Auth Token"
+                                  value={reminderSettings.twilioToken} 
+                                  onChange={(e) => setReminderSettings(prev => ({ ...prev, twilioToken: e.target.value }))}
+                                  className="styled-text-input"
+                                />
+                              </div>
+                            </div>
+
+                            <div className="form-group-row">
+                              <div className="form-group">
+                                <label htmlFor="twilioFrom">
+                                  {reminderSettings.twilioType === 'whatsapp' ? 'Twilio WhatsApp Sender Number' : 'Twilio Phone Number'}
+                                </label>
+                                <input 
+                                  type="text" 
+                                  id="twilioFrom" 
+                                  placeholder={reminderSettings.twilioType === 'whatsapp' ? 'e.g. +14155238886' : 'e.g. +1234567890'}
+                                  value={reminderSettings.twilioFrom} 
+                                  onChange={(e) => setReminderSettings(prev => ({ ...prev, twilioFrom: e.target.value }))}
+                                  className="styled-text-input"
+                                />
+                                {reminderSettings.twilioType === 'whatsapp' && (
+                                  <small className="text-dim">Typically <code>+14155238886</code> for the Twilio sandbox.</small>
+                                )}
+                              </div>
+                              <div className="form-group">
+                                <label htmlFor="twilioTo">Recipient Phone Number</label>
+                                <input 
+                                  type="text" 
+                                  id="twilioTo" 
+                                  placeholder="e.g. +919876543210 (your number)"
+                                  value={reminderSettings.twilioTo} 
+                                  onChange={(e) => setReminderSettings(prev => ({ ...prev, twilioTo: e.target.value }))}
+                                  className="styled-text-input"
+                                />
+                                <small className="text-dim">Must include <code>+</code> and country code.</small>
+                              </div>
+                            </div>
+
+                            {/* Twilio WhatsApp instructions if selected */}
+                            {reminderSettings.twilioType === 'whatsapp' && (
+                              <div className="whatsapp-guide" style={{ marginTop: '16px', borderColor: 'var(--accent-hover)' }}>
+                                <h5>
+                                  <Sparkles className="text-accent" style={{ width: '16px', height: '16px', display: 'inline', marginRight: '6px', verticalAlign: 'text-bottom' }} />
+                                  Twilio WhatsApp Sandbox Setup Required:
+                                </h5>
+                                <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '8px' }}>
+                                  Before Twilio can send messages to your WhatsApp, your recipient phone number must join your sandbox:
+                                </p>
+                                <ol className="guide-steps" style={{ fontSize: '0.85rem' }}>
+                                  <li>Go to your <strong>Twilio Console &rarr; Messaging &rarr; Try it out &rarr; Send a WhatsApp message</strong>.</li>
+                                  <li>Send the join message (e.g. <code className="code-highlight">join sandbox-name</code>) to Twilio's WhatsApp number (e.g., <strong>+1 415 523 8886</strong>).</li>
+                                  <li>Once linked, you can click the Test button below to verify!</li>
+                                </ol>
+                              </div>
+                            )}
+                          </div>
+                        )}
+
+                        <hr className="settings-divider" />
+
+                        {/* Time Slots */}
+                        <div className="time-slots-section">
+                          <h4>Customize Dose Reminders</h4>
+                          <p className="subtitle">Configure the exact time you prefer to take each dose phase.</p>
+                          
+                          <div className="time-pickers-grid">
+                            {/* Morning Pill Time */}
+                            <div className="time-picker-card">
+                              <div className="card-title-sub">
+                                <Clock className="text-accent" />
+                                <div>
+                                  <h5>Morning Dose</h5>
+                                  <small>Phase 1 (1st - 10th day)</small>
+                                </div>
+                              </div>
+                              <input 
+                                type="time" 
+                                value={reminderSettings.morningTime} 
+                                onChange={(e) => setReminderSettings(prev => ({ ...prev, morningTime: e.target.value }))}
+                                className="styled-time-input"
+                              />
+                            </div>
+
+                            {/* Evening Pill Time */}
+                            <div className="time-picker-card">
+                              <div className="card-title-sub">
+                                <Clock className="text-accent" />
+                                <div>
+                                  <h5>Evening Dose</h5>
+                                  <small>Phase 1 (1st - 10th day)</small>
+                                </div>
+                              </div>
+                              <input 
+                                type="time" 
+                                value={reminderSettings.eveningTime} 
+                                onChange={(e) => setReminderSettings(prev => ({ ...prev, eveningTime: e.target.value }))}
+                                className="styled-time-input"
+                              />
+                            </div>
+
+                            {/* Night Pill Time */}
+                            <div className="time-picker-card">
+                              <div className="card-title-sub">
+                                <Clock className="text-accent" />
+                                <div>
+                                  <h5>Night Dose</h5>
+                                  <small>Phase 3+ (Cycle Regulation)</small>
+                                </div>
+                              </div>
+                              <input 
+                                type="time" 
+                                value={reminderSettings.nightTime} 
+                                onChange={(e) => setReminderSettings(prev => ({ ...prev, nightTime: e.target.value }))}
+                                className="styled-time-input"
+                              />
+                            </div>
+                          </div>
+                        </div>
+
+                        <hr className="settings-divider" />
+
+                        {/* Test & Troubleshooting Panel */}
+                        <div className="troubleshoot-panel">
+                          <div className="panel-info">
+                            <h4>Test Your Settings</h4>
+                            <p>Verify that your notification channels are working. Click the buttons below to trigger instant test alerts.</p>
+                          </div>
+                          <div className="test-buttons-row">
+                            <button 
+                              className="btn btn-secondary" 
+                              onClick={handleTestReminder}
+                            >
+                              <Bell /> Test Push & Chime
+                            </button>
+
+                            {reminderSettings.twilioEnabled && (
+                              <button 
+                                className="btn btn-primary" 
+                                onClick={async () => {
+                                  if (!reminderSettings.twilioSid || !reminderSettings.twilioToken || !reminderSettings.twilioFrom || !reminderSettings.twilioTo) {
+                                    alert("Please fill in all Twilio credentials above before testing.");
+                                    return;
+                                  }
+                                  const success = await sendTwilioSMS("Bebo Reminder Test: This is a test SMS from your Bebo Pill Companion!");
+                                  if (success) {
+                                    alert("Twilio SMS sent! Check your phone.");
+                                  } else {
+                                    alert("Failed to send SMS. Please make sure server.js is running and your Twilio credentials are correct.");
+                                  }
+                                }}
+                              >
+                                <Play /> Test Twilio SMS
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Guide & Alert Card */}
+                  <div className="dashboard-card info-card">
+                    <div className="card-header">
+                      <h3>
+                        <Info className="text-info" />
+                        Important Technical Notes
+                      </h3>
+                    </div>
+                    <div className="card-body">
+                      <div className="guideline-item">
+                        <div className="guideline-icon text-warning">
+                          <Clock />
+                        </div>
+                        <div className="guideline-content">
+                          <h5>Browser Background Execution</h5>
+                          <p>Since Bebo runs client-side, the browser tab must remain open (even in the background) for reminders to trigger. If you close the tab, reminders will catch up and alert you the next time you open the application if a dose is still outstanding today.</p>
+                        </div>
+                      </div>
+
+                      <div className="guideline-item">
+                        <div className="guideline-icon text-success">
+                          <Shield />
+                        </div>
+                        <div className="guideline-content">
+                          <h5>Notification Channels</h5>
+                          <p>For system push notifications, check your browser's site settings to ensure that Bebo has permission to send notifications. For WhatsApp alerts, ensure your phone number has been registered with the Twilio WhatsApp Sandbox.</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </section>
+            )}
+
+            {/* SCREEN 6: Regimen Guide Tab */}
             {activeTab === 'guide' && (
               <section className="screen-section">
                 <div className="guide-grid">
