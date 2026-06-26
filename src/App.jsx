@@ -698,7 +698,7 @@ export default function App() {
         ...prev,
         [dateStr]: {
           ...current,
-          period: !current[period]
+          period: !current.period
         }
       };
     });

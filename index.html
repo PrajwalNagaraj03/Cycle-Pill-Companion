@@ -9,6 +9,47 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script>
+      window.addEventListener('error', function(event) {
+        const errorBox = document.createElement('div');
+        errorBox.style.position = 'fixed';
+        errorBox.style.top = '0';
+        errorBox.style.left = '0';
+        errorBox.style.width = '100vw';
+        errorBox.style.height = '100vh';
+        errorBox.style.backgroundColor = 'rgba(10, 11, 16, 0.98)';
+        errorBox.style.color = '#ff5c8a';
+        errorBox.style.padding = '30px';
+        errorBox.style.zIndex = '999999';
+        errorBox.style.overflow = 'auto';
+        errorBox.style.fontFamily = 'monospace';
+        errorBox.style.fontSize = '14px';
+        errorBox.style.lineHeight = '1.6';
+        errorBox.style.whiteSpace = 'pre-wrap';
+        errorBox.style.boxSizing = 'border-box';
+        
+        let storageInfo = '';
+        try {
+          storageInfo = 
+            'bebo_start_date: ' + localStorage.getItem('bebo_start_date') + '\n' +
+            'bebo_logs: ' + localStorage.getItem('bebo_logs') + '\n' +
+            'bebo_reminder_settings: ' + localStorage.getItem('bebo_reminder_settings') + '\n' +
+            'bebo_last_fired_reminders: ' + localStorage.getItem('bebo_last_fired_reminders');
+        } catch (e) {
+          storageInfo = 'Failed to read localStorage: ' + e.message;
+        }
+        
+        errorBox.innerHTML = '<h2 style="color: #ff5c8a; margin-top: 0; margin-bottom: 20px; font-size: 22px; border-bottom: 1px solid rgba(255, 92, 138, 0.2); padding-bottom: 10px;">[Bebo Critical Error]</h2>' +
+          '<p style="background: rgba(255, 92, 138, 0.1); padding: 12px; border-radius: 6px; border: 1px solid rgba(255, 92, 138, 0.2);"><strong>Message:</strong> ' + event.message + '</p>' +
+          '<p><strong>Source:</strong> ' + event.filename + ':' + event.lineno + ':' + event.colno + '</p>' +
+          '<h3 style="margin-top: 20px; color: #fff;">Stack Trace</h3>' +
+          '<pre style="background: rgba(0, 0, 0, 0.3); padding: 15px; border-radius: 6px; border: 1px solid rgba(255, 255, 255, 0.05);">' + (event.error ? event.error.stack : 'No stack trace available') + '</pre>' +
+          '<h3 style="margin-top: 20px; color: #fff;">LocalStorage State</h3>' +
+          '<pre style="background: rgba(0, 0, 0, 0.3); padding: 15px; border-radius: 6px; border: 1px solid rgba(255, 255, 255, 0.05);">' + storageInfo + '</pre>';
+          
+        document.body.appendChild(errorBox);
+      });
+    </script>
   </head>
   <body>
     <div id="root"></div>
