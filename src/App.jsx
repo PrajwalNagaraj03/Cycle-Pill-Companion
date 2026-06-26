@@ -93,6 +93,42 @@ function playChime() {
   }
 }
 
+// Helper for displaying notifications safely across devices/browsers
+function showNotification(title, options) {
+  if (typeof Notification === 'undefined' || Notification.permission !== 'granted') {
+    return;
+  }
+  
+  // Try using Service Worker registration first (which is required on Android Chrome/mobile browsers)
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.getRegistration().then(registration => {
+      if (registration && typeof registration.showNotification === 'function') {
+        registration.showNotification(title, options);
+      } else {
+        // Fallback to constructor
+        try {
+          new Notification(title, options);
+        } catch (e) {
+          console.warn("Failed to construct Notification, but caught successfully:", e);
+        }
+      }
+    }).catch(err => {
+      console.warn("Error getting service worker registration, falling back:", err);
+      try {
+        new Notification(title, options);
+      } catch (e) {
+        console.warn("Failed to construct Notification, but caught successfully:", e);
+      }
+    });
+  } else {
+    try {
+      new Notification(title, options);
+    } catch (e) {
+      console.warn("Failed to construct Notification, but caught successfully:", e);
+    }
+  }
+}
+
 // Timeline simulation engine
 function calculateTimeline(startDateStr, logs, totalDays = 185) {
   if (!startDateStr) return [];
@@ -420,7 +456,7 @@ export default function App() {
           const pillLabel = pill.charAt(0).toUpperCase() + pill.slice(1);
           
           if (reminderSettings.enabled && typeof Notification !== 'undefined' && Notification.permission === 'granted') {
-            new Notification("Bebo Medication Reminder", {
+            showNotification("Bebo Medication Reminder", {
               body: `It's time to take your ${pillLabel} Pill! (${reminderTime})`,
             });
             firedAny = true;
@@ -637,14 +673,14 @@ export default function App() {
     
     if (typeof Notification !== 'undefined') {
       if (Notification.permission === 'granted') {
-        new Notification("Bebo Reminder Test", {
+        showNotification("Bebo Reminder Test", {
           body: "This is a test notification from Bebo Pill & Cycle Companion. It works!",
         });
       } else {
         Notification.requestPermission().then(permission => {
           setNotificationPermission(permission);
           if (permission === 'granted') {
-            new Notification("Bebo Reminder Test", {
+            showNotification("Bebo Reminder Test", {
               body: "This is a test notification from Bebo Pill & Cycle Companion. It works!",
             });
           } else {
